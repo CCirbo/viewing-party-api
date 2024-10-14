@@ -32,6 +32,7 @@ rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
 RSpec.configure do |config|
+  config.formatter = :documentation
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')
@@ -69,5 +70,17 @@ Shoulda::Matchers.configure do |config|
   config.integrate do |with|
     with.test_framework :rspec
     with.library :rails
+  end
+end
+
+VCR.configure do |config|
+  config.cassette_library_dir = 'spec/fixtures/vcr_cassettes'
+  config.hook_into :webmock
+  config.filter_sensitive_data('<MOVIE_API_KEY>') { Rails.application.credentials.tmdb_movie[:key] }
+  config.default_cassette_options = { re_record_interval: 7.days }
+  config.configure_rspec_metadata!
+  config.allow_http_connections_when_no_cassette = true
+  config.before_record do |i|
+    i.response.body.force_encoding('UTF-8')
   end
 end
