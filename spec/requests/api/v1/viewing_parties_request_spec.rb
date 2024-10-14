@@ -11,7 +11,20 @@ RSpec.describe "Viewing Parties Endpoint", type: :request do
       invitee2 = User.create!(id: 7, name: "Ceci", username: "titanic_forever", password: "abcqwerty")
       invitee3 = User.create!(id: 5, name: "Peyton", username: "star_wars_geek_8", password: "blueivy")
       
-      valid_attributes = {
+      viewing_party = ViewingParty.create!(name: "Juliet's Bday Movie Bash!", 
+                                         start_time: "2025-02-01 10:00:00", 
+                                         end_time: "2025-02-01 14:30:00", 
+                                         movie_id: 278, 
+                                         movie_title: "The Shawshank Redemption")
+                                         
+      UserParty.create!(user_id: host.id, viewing_party_id: viewing_party.id, host: true)
+      UserParty.create!(user_id: invitee1.id, viewing_party_id: viewing_party.id, host: false)
+      UserParty.create!(user_id: invitee2.id, viewing_party_id: viewing_party.id, host: false)
+      UserParty.create!(user_id: invitee3.id, viewing_party_id: viewing_party.id, host: false)
+
+      expect(viewing_party.user_parties.where(host: false).count).to eq(3)
+
+      post "/api/v1/users/#{host.id}/viewing_parties", params: {
         name: "Juliet's Bday Movie Bash!",
         start_time: "2025-02-01 10:00:00",
         end_time: "2025-02-01 14:30:00",
@@ -20,18 +33,17 @@ RSpec.describe "Viewing Parties Endpoint", type: :request do
         api_key: host.api_key,
         invitees: [invitee1.id, invitee2.id, invitee3.id]
       }
-        # require 'pry'; binding.pry
-      post "/api/v1/users/#{host.id}/viewing_parties", params: valid_attributes
 
       expect(response).to be_successful
       json = JSON.parse(response.body, symbolize_names: true)[:data]
-      # require 'pry'; binding.pry
       expect(json[:attributes][:name]).to eq("Juliet's Bday Movie Bash!")
       expect(json[:attributes][:invitees].size).to eq(3)
       expect(json[:attributes][:invitees].first[:name]).to eq("Barbara")
       expect(response).to have_http_status(201)
     end
-
+  end
+ 
+  describe "sad path" do
     it "returns status code 401 when the API key is invalid" do
       host = User.create!(name: "Host Name", username: "host_username", password: "abc123", api_key: "valid_api_key")
       invitee1 = User.create!(id: 11, name: "Barbara", username: "leo_fan", password: "test123")
@@ -52,9 +64,9 @@ RSpec.describe "Viewing Parties Endpoint", type: :request do
 
       expect(response).to have_http_status(401)
       json = JSON.parse(response.body, symbolize_names: true)
-      expect(json[:error]).to eq("Invalid API key")
+      expect(json[:message]).to eq("Invalid API key")
     end
-
+  
     it "returns status code 422 when required fields are missing" do
       host = User.create!(name: "Host Name", username: "host_username", password: "abc123", api_key: "valid_api_key")
       invitee1 = User.create!(id: 11, name: "Barbara", username: "leo_fan", password: "test123")
@@ -75,7 +87,7 @@ RSpec.describe "Viewing Parties Endpoint", type: :request do
 
       expect(response).to have_http_status(422)
       json = JSON.parse(response.body, symbolize_names: true)
-      expect(json[:errors]).to include("Name can't be blank")
+      expect(json[:message]).to include("Name can't be blank")
     end
   end
 end

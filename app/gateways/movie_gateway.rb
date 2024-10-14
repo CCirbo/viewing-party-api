@@ -1,4 +1,4 @@
-class MovieService
+class MovieGateway
   def self.connection
     Faraday.new(url: "https://api.themoviedb.org") do |faraday|
       faraday.params["api_key"] = Rails.application.credentials.tmdb_movie[:key]
@@ -17,8 +17,8 @@ class MovieService
 
   def self.movie_details(id)
     movie = parse_response(connection.get("/3/movie/#{id}"))
-    movie[:cast] = parse_response(connection.get("/3/movie/#{id}/credits"))[:cast].first(10)
-    # movie[:reviews] = parse_response(connection.get("/3/movie/#{id}/reviews"))[:results].first(5)
+    # movie[:cast] = parse_response(connection.get("/3/movie/#{id}/credits"))[:cast].first(10)
+    movie[:cast] = parse_response(connection.get("/3/movie/#{id}/credits"))[:cast]
     movie[:reviews] = parse_response(connection.get("/3/movie/#{id}/reviews"))[:results]
     movie
   end

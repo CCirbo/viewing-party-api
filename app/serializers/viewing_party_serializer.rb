@@ -3,7 +3,7 @@ class ViewingPartySerializer
   attributes :name, :start_time, :end_time, :movie_id, :movie_title
 
   attribute :invitees do |viewing_party|
-    viewing_party.user_parties.reject{ |user| user.host }.map do |user_party|
+    viewing_party.user_parties.select { |user_party| !user_party.host }.map do |user_party|
       {
         id: user_party.user.id,
         name: user_party.user.name,
@@ -11,14 +11,4 @@ class ViewingPartySerializer
       }
     end
   end
-
-  # attribute :invitees do |viewing_party|
-  #   viewing_party.users.map do |user|
-  #     {
-  #       id: user.id,
-  #       name: user.name,
-  #       username: user.username
-  #     }
-  #   end
-  # end
 end

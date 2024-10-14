@@ -11,7 +11,6 @@ class MovieDetail
               :reviews
 
   def initialize(details)
-    # require 'pry'; binding.pry
     @id = details[:id].to_s
     @title = details[:title]
     @release_year = details[:release_date]&.split('-').first.to_i
@@ -33,7 +32,6 @@ class MovieDetail
 
   def formatted_cast
     @cast.map do |cast_member|
-      # require 'pry'; binding.pry
       {
         character: cast_member[:character],
         actor: cast_member[:name]
@@ -49,5 +47,4 @@ class MovieDetail
       }
     end
   end
-
 end
