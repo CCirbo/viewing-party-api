@@ -31,20 +31,10 @@ class MovieDetail
   end
 
   def formatted_cast
-    @cast.map do |cast_member|
-      {
-        character: cast_member[:character],
-        actor: cast_member[:name]
-      }
-    end
+    @cast.map { |cast_member| { character: cast_member[:character], actor: cast_member[:name] }}
   end
   
   def formatted_reviews
-    @reviews.map do |review|
-      {
-        author: review[:author],
-        review: review[:content]
-      }
-    end
+    @reviews.map {|review| { author: review[:author], review: review[:content] } }
   end
 end

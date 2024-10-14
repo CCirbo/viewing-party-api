@@ -17,7 +17,6 @@ class MovieGateway
 
   def self.movie_details(id)
     movie = parse_response(connection.get("/3/movie/#{id}"))
-    # movie[:cast] = parse_response(connection.get("/3/movie/#{id}/credits"))[:cast].first(10)
     movie[:cast] = parse_response(connection.get("/3/movie/#{id}/credits"))[:cast]
     movie[:reviews] = parse_response(connection.get("/3/movie/#{id}/reviews"))[:results]
     movie

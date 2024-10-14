@@ -1,7 +1,4 @@
 require "rails_helper"
-RSpec.configure do |config| 
- config.formatter = :documentation 
- end
 
 RSpec.describe "Viewing Parties Endpoint", type: :request do
   describe "happy path" do
@@ -11,20 +8,7 @@ RSpec.describe "Viewing Parties Endpoint", type: :request do
       invitee2 = User.create!(id: 7, name: "Ceci", username: "titanic_forever", password: "abcqwerty")
       invitee3 = User.create!(id: 5, name: "Peyton", username: "star_wars_geek_8", password: "blueivy")
       
-      viewing_party = ViewingParty.create!(name: "Juliet's Bday Movie Bash!", 
-                                         start_time: "2025-02-01 10:00:00", 
-                                         end_time: "2025-02-01 14:30:00", 
-                                         movie_id: 278, 
-                                         movie_title: "The Shawshank Redemption")
-                                         
-      UserParty.create!(user_id: host.id, viewing_party_id: viewing_party.id, host: true)
-      UserParty.create!(user_id: invitee1.id, viewing_party_id: viewing_party.id, host: false)
-      UserParty.create!(user_id: invitee2.id, viewing_party_id: viewing_party.id, host: false)
-      UserParty.create!(user_id: invitee3.id, viewing_party_id: viewing_party.id, host: false)
-
-      expect(viewing_party.user_parties.where(host: false).count).to eq(3)
-
-      post "/api/v1/users/#{host.id}/viewing_parties", params: {
+      post "/api/v1/viewing_parties", params: {
         name: "Juliet's Bday Movie Bash!",
         start_time: "2025-02-01 10:00:00",
         end_time: "2025-02-01 14:30:00",
@@ -37,8 +21,10 @@ RSpec.describe "Viewing Parties Endpoint", type: :request do
       expect(response).to be_successful
       json = JSON.parse(response.body, symbolize_names: true)[:data]
       expect(json[:attributes][:name]).to eq("Juliet's Bday Movie Bash!")
-      expect(json[:attributes][:invitees].size).to eq(3)
-      expect(json[:attributes][:invitees].first[:name]).to eq("Barbara")
+      expect(json[:attributes][:invitees].count).to eq(3)
+      expected_invitees = ["Barbara", "Ceci", "Peyton"]
+      actual_invitees = json[:attributes][:invitees].map { |invitee| invitee[:name] }
+      expect(actual_invitees).to match_array(expected_invitees)
       expect(response).to have_http_status(201)
     end
   end
@@ -60,7 +46,7 @@ RSpec.describe "Viewing Parties Endpoint", type: :request do
         invitees: [invitee1.id, invitee2.id, invitee3.id]
       }
 
-      post "/api/v1/users/#{host.id}/viewing_parties", params: invalid_attributes
+      post "/api/v1/viewing_parties", params: invalid_attributes
 
       expect(response).to have_http_status(401)
       json = JSON.parse(response.body, symbolize_names: true)
@@ -83,7 +69,7 @@ RSpec.describe "Viewing Parties Endpoint", type: :request do
         invitees: [invitee1.id, invitee2.id, invitee3.id]
       }
 
-      post "/api/v1/users/#{host.id}/viewing_parties", params: invalid_attributes
+      post "/api/v1/viewing_parties", params: invalid_attributes
 
       expect(response).to have_http_status(422)
       json = JSON.parse(response.body, symbolize_names: true)

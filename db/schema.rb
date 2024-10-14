@@ -17,7 +17,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_10_10_215310) do
   create_table "user_parties", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "viewing_party_id", null: false
-    t.boolean "host"
+    t.boolean "host", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_user_parties_on_user_id"
